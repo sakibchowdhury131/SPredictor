@@ -20,9 +20,10 @@ def train():
     # check_database('database.csv')
     model = StockPredictor(learning_rate = 1e-3, batch_size = 16)
     ModelSummary(model)
-    logger = TensorBoardLogger("tensorboard", name="lin-conv-lin-out1")
+    EXP_NAME = '4D_data_activation'
+    logger = TensorBoardLogger("tensorboard", name=EXP_NAME)
 
-    checkpoint_callback = ModelCheckpoint(dirpath="./checkpoints/lin-conv-lin-out1", 
+    checkpoint_callback = ModelCheckpoint(dirpath=f"./checkpoints/{EXP_NAME}", 
                                         save_top_k=2, 
                                         monitor="val_loss",
                                         mode="min",)
@@ -32,12 +33,12 @@ def train():
         devices=1,
         limit_train_batches = 100000,
         max_epochs=2000,
-        accelerator="cpu",
+        accelerator="gpu",
         logger = logger,
-        
+        log_every_n_steps=2,    # since we have only 6 batches
     ) 
     trainer.fit(model=model, 
-                ckpt_path = "checkpoints/lin-conv-lin-out1/epoch=294-step=1770.ckpt",
+                # ckpt_path = "checkpoints/4D_data_activation/epoch=12-step=78.ckpt",
                 )
     
 

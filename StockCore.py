@@ -30,8 +30,8 @@ class StockDataset(pl.LightningDataModule):
       index = index.tolist()
 
     data = get_data(self.URLs[index])
-    input = torch.FloatTensor(data[:self.inp_len])
-    output = torch.FloatTensor(data[self.inp_len:self.inp_len+self.out_len])
+    input = torch.FloatTensor(data)[:, :self.inp_len]
+    output = torch.FloatTensor(data)[:, self.inp_len:self.inp_len+self.out_len]
     return input, output
 
 
@@ -41,14 +41,18 @@ class StockPred(nn.Module):
     super (StockPred, self).__init__()
 
     #define layers
-    self.encoder_layer = nn.TransformerEncoderLayer(d_model=128, nhead=8, batch_first = True)
-    self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=3)
     self.lin1 = nn.Linear(in_features = 128, out_features = 128)
-    self.conv1 = nn.Conv1d(in_channels = 1, out_channels = 32, kernel_size = 5, stride=2)
-    self.conv2 = nn.Conv1d(in_channels = 32, out_channels = 64, kernel_size = 5, stride=2)
-    self.conv3 = nn.Conv1d(in_channels = 64, out_channels = 32, kernel_size = 5, stride=2)
-    self.conv4 = nn.Conv1d(in_channels = 32, out_channels = 1, kernel_size = 5, stride=2)
-    self.lin2 = nn.Linear(in_features = 5, out_features = 5)
+    self.conv1 = nn.Conv2d(in_channels = 1, out_channels = 32, kernel_size = (2, 5), stride=1)
+    self.conv2 = nn.Conv2d(in_channels = 32, out_channels = 64, kernel_size = (2, 5), stride=1)
+    self.conv3 = nn.Conv2d(in_channels = 64, out_channels = 32, kernel_size = (2, 5), stride=1)
+    self.conv4 = nn.Conv1d(in_channels = 32, out_channels = 8, kernel_size = 5, stride=2)
+    self.conv5 = nn.Conv1d(in_channels = 8, out_channels = 4, kernel_size = 5, stride=2)
+    # self.conv6 = nn.Conv1d(in_channels = 4, out_channels = 2, kernel_size = 5, stride=2)
+    # self.conv7 = nn.Conv1d(in_channels = 2, out_channels = 1, kernel_size = 5, stride=2)
+    self.lin2 = nn.Linear(in_features = 26, out_features = 12)
+    self.lin3 = nn.Linear(in_features = 12, out_features = 6)
+    self.lin4 = nn.Linear(in_features = 6, out_features = 2)
+    # self.activation = nn.Sigmoid()
   
   def forward(self, x):
     '''
@@ -58,12 +62,16 @@ class StockPred(nn.Module):
     x = x.unsqueeze(1)
     y = self.lin1(x)
     y = self.conv1(y)
+    # y = self.activation(y)
     y = self.conv2(y)
-    y = self.conv3(y)
+    y = self.conv3(y).squeeze(2)
     y = self.conv4(y)
+    y = self.conv5(y)
     y= self.lin2(y)
+    y= self.lin3(y)
+    y= self.lin4(y)
     y = y.abs()
-    y = y.squeeze()
+    #y = y.squeeze()
     # y = self.transformer_encoder(y)
     return y
   
@@ -141,7 +149,7 @@ class StockPredictor(pl.LightningModule):
     self.save_hyperparameters()
     self.learning_rate = learning_rate
     self.batch_size = batch_size
-    self.model = StockPred_out1()
+    self.model = StockPred()
 
   def training_step(self, batch, batch_idx):
     '''
