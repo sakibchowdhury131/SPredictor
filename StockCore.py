@@ -165,16 +165,6 @@ class StockPredictor(pl.LightningModule):
       print('REF: ', output[0])
       print('PRED: ', pred[0])
     return loss
-  
-
-  def predict_step(self, batch, batch_idx):
-        # enable Monte Carlo Dropout
-        self.dropout.train()
-
-        # take average of `self.mc_iteration` iterations
-        pred = [self.dropout(self.model(x)).unsqueeze(0) for _ in range(self.mc_iteration)]
-        pred = torch.vstack(pred).mean(dim=0)
-        return pred
 
   def configure_optimizers(self):
     optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)

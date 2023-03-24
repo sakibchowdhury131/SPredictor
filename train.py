@@ -37,7 +37,7 @@ def train():
         
     ) 
     trainer.fit(model=model, 
-                ckpt_path = "checkpoints/lin-conv-lin-out1/epoch=137-step=828.ckpt",
+                ckpt_path = "checkpoints/lin-conv-lin-out1/epoch=294-step=1770.ckpt",
                 )
     
 
