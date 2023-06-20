@@ -1,14 +1,15 @@
 from get_data import get_data
 import torch
-from StockCore import StockPred
+from StockCore import StockPred, StockPred_Transformer
 import torch.nn as nn
-
-
+from plot_candle_chart import plot_data
+'''
 data = torch.FloatTensor(get_data())[:, :128].unsqueeze(0)
+data = torch.cat([data, data, data])
 stockPred = StockPred()
 print(data.shape)
 print(stockPred(data).shape)
-
+'''
 
 '''
 # With square kernels and equal stride
@@ -21,3 +22,8 @@ input = torch.randn(20, 16, 50, 100)
 output = m(input)
 print(output.shape)
 '''
+
+data = torch.FloatTensor(get_data())
+
+plot_data(data[:, -2:])
+plot_data(data[:, -2:])

@@ -12,15 +12,15 @@ def check_database(csv_file):
 
     for line in tqdm(lines):
         unpacked = line.split(',')
-        URL = unpacked[-1]
-        if len(get_data(URL)) <400:
-            print(f'problem identified in {unpacked[0]}: data size --> {len(get_data(URL))}')
+        ORGANIZATION = unpacked[-1]
+        if len(get_data(ORGANIZATION)) <400:
+            print(f'problem identified in {unpacked[0]}: data size --> {len(get_data(ORGANIZATION))}')
 
 def train():
     # check_database('database.csv')
-    model = StockPredictor(learning_rate = 1e-3, batch_size = 16)
+    model = StockPredictor(learning_rate = 1e-5, batch_size = 16)
     ModelSummary(model)
-    EXP_NAME = '4D_data_activation'
+    EXP_NAME = '4D_data_mmul'
     logger = TensorBoardLogger("tensorboard", name=EXP_NAME)
 
     checkpoint_callback = ModelCheckpoint(dirpath=f"./checkpoints/{EXP_NAME}", 
@@ -33,15 +33,12 @@ def train():
         devices=1,
         limit_train_batches = 100000,
         max_epochs=2000,
-        accelerator="gpu",
+        accelerator="cpu",
         logger = logger,
         log_every_n_steps=2,    # since we have only 6 batches
     ) 
     trainer.fit(model=model, 
-                # ckpt_path = "checkpoints/4D_data_activation/epoch=12-step=78.ckpt",
+                ckpt_path = "checkpoints/4D_data_mmul/epoch=3-step=1928.ckpt",
                 )
-    
-
 if __name__ == '__main__':
     train()
-    

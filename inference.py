@@ -1,12 +1,12 @@
 from StockCore import StockPredictor
-from StockCore import StockDataset
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 from get_data import get_data
 import torch
+from plot_candle_chart import plot_data
+import numpy as np
 
 def inference(x,
-              checkpoint = 'checkpoints/lin-conv-lin-out1/epoch=294-step=1770.ckpt',
+              checkpoint = 'checkpoints/4D_data_mmul/epoch=3-step=1928.ckpt',
               device = 'cpu', # cpu or gpu
               batch_size = 1, 
               learning_rate = 1e-3,
@@ -21,19 +21,20 @@ def inference(x,
 
 if __name__ == '__main__':
     
-    organization_name = 'OLYMPIC'
-    database = {}
-    with open('database.csv', 'r') as f:
-      lines = f.readlines()
+    organization_name = 'SONALILIFE'
     
-    for line in tqdm(lines):
-        database[line.split(',')[0]] = line.split(',')[1]
-    
-    URL = database[organization_name]
-    data = get_data(URL)
-    input = torch.FloatTensor(data[-129:-1]).unsqueeze(0)
-    pred = inference(input)
-    print('last day price (BDT):',input[0, -1].numpy())
-    print('Next 2 days Predicted LTP (BDT):',pred)
+    data = torch.FloatTensor(get_data(organization_name))
 
-
+    final_gt = data[:, -128:]
+    plot_data(final_gt)
+    # predict the next 7 days
+    predicted_days = 8
+    input = data[:, -128-predicted_days:-predicted_days]
+    input = input.unsqueeze(0)
+    for i in tqdm(range(predicted_days)):
+        pred = inference(input).squeeze()
+        next_day = pred[:, 0]
+        print(next_day)
+        input[:, :, :-1] = input[:, :, 1:]
+        input[:, :, -1] = torch.tensor(next_day)
+    plot_data(input.squeeze())

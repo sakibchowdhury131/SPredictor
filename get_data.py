@@ -1,8 +1,8 @@
 import requests as r
 from pandas.io.json import json_normalize
 
-def get_data(URL = 'https://stocknow.com.bd/api/v1/instruments/JAMUNAOIL/history?resolution=D&additionalField=trade'):
-    action_getURL = URL
+def get_data(ORGANIZATION = 'JAMUNAOIL'):
+    action_getURL = f'https://stocknow.com.bd/api/v1/instruments/{ORGANIZATION}/history?resolution=D&additionalField=trade'
     res = r.get(action_getURL)
     return res.json()[:4]
 
